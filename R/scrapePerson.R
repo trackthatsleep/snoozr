@@ -18,8 +18,8 @@ scrapePerson <- function(idTarget, anon = FALSE, export = FALSE){
   subdirMatch <- stringr::str_detect(subdirs, idTarget)#match idTarget to path
   subdir <- as.data.frame(cbind(subdirs, subdirMatch))#combine paths and match
   subdir <- subdir %>% #rename to path and only retain
-    rename(path = subdirs) %>% #matching path
-    filter(subdirMatch == TRUE)
+    dplyr::rename(path = subdirs) %>% #matching path
+    dplyr::filter(subdirMatch == TRUE)
 
   #Get file names from subdir
   files <- as.data.frame(list.files(stringr::str_c("./data/", idTarget, "/sleep/")))
