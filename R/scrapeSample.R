@@ -1,6 +1,6 @@
 
 #' Scrapes fitbit JSON sleep data from all participants (subdirectories) in a data directory
-#'
+#' @param sampbirthdf optional character file name (w/ extension) of supplemental data file of id and child birth date (babybirthdarte format: mm/dd/yyyy) in "data" subdirectory
 #' @param anon whether an anonymized df (and .csv, if export == TRUE) is desired
 #' @param export whether to export .csv of file to "processed data" subdirectory
 #'
@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-scrapeSample <- function(anon = FALSE, export = FALSE){
+scrapeSample <- function(sampbirthdf = NULL, anon = FALSE, export = FALSE){
   #Get sub-directories and scrape IDs from folder name
   subdirs <- list.dirs(here::here("data"),
                        recursive = FALSE)
@@ -17,14 +17,27 @@ scrapeSample <- function(anon = FALSE, export = FALSE){
                   full.names = FALSE,#nix full file-path
                   recursive = FALSE)
 
-  #scrape first id
-  dfSample <- scrapePerson(idTarget = ids[[1]])
+  #scrape (and append birth info if sampbirthdf not NULL)
+  #if(is.null(sampbirthdf)){
+    #scrape first id
+    dfSample <- scrapePerson(idTarget = ids[[1]])
 
-  #loop through scrapePerson, and append to dfSample
-  for(i in 2:length(ids)){
-    newdf <- scrapePerson(idTarget = ids[[i]])
-    dfSample <- rbind(dfSample, newdf)
-  }
+    #loop through scrapePerson, and append to dfSample
+    for(i in 2:length(ids)){
+      newdf <- scrapePerson(idTarget = ids[[i]])
+      dfSample <- rbind(dfSample, newdf)
+    }
+  #}else if(!is.null(sampbirthdf)){
+    #scrape first id
+    dfSample <- scrapePerson(idTarget = ids[[1]], birthdf = sampbirthdf)
+
+    #loop through scrapePerson, and append to dfSample
+    for(i in 2:length(ids)){
+      newdf <- scrapePerson(idTarget = ids[[i]], birthdf = sampbirthdf)
+      dfSample <- rbind(dfSample, newdf)
+    }
+  #}
+
 
   #anonymize w/ cryptographic id if necessary
   if(anon ==TRUE){

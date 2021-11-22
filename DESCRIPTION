@@ -14,6 +14,7 @@ Imports:
     dplyr,
     here,
     jsonlite,
+    lubridate,
     magrittr,
     openssl,
     readr,

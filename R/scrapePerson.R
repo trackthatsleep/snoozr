@@ -2,6 +2,7 @@
 #' Scrapes fitbit JSON sleep data from a particular participant in data folder
 #'
 #' @param idTarget character of participant (subdirectory) name to scrape
+#' @param birthdf optional character file name (w/ extension) of supplemental data file of id and child birth date (babybirthdarte format: mm/dd/yyyy) in "data" subdirectory
 #' @param anon whether an anonymized df (and .csv, if export == TRUE) is desired
 #' @param export whether to export .csv of file to "processed data" subdirectory
 #'
@@ -9,7 +10,7 @@
 #' @export
 #'
 #' @examples
-scrapePerson <- function(idTarget, anon = FALSE, export = FALSE){
+scrapePerson <- function(idTarget, birthdf = NULL, anon = FALSE, export = FALSE){
 
   #Get sub-directories and scrape IDs from folder name
   subdirs <- list.dirs(here::here("data"),
@@ -54,11 +55,37 @@ scrapePerson <- function(idTarget, anon = FALSE, export = FALSE){
       dplyr::relocate(id)#TODO: add exported pair of de-anon id?
   }
 
+  #Append phases if birthdf file is supplied
+  if(!is.null(birthdf)){
+    #import birthdf
+    birthdates <- readr::read_csv(here::here("data",birthdf))
+
+    #bring over birthday info from birthdates
+    dfPerson <- dplyr::left_join(dfPerson, birthdates, by = "id")
+
+    #Convert dates to dates (orig. as character())
+    dfPerson <- dfPerson %>% dplyr::mutate(baby_date = as.Date(babybirthdate, "%m/%d/%Y"),
+                                       start_date = lubridate::as_date(StartTime))
+
+    #Calculate the difference between birth date and survey start date in days
+    dfPerson <- dfPerson %>% dplyr::mutate(days_dif = as.numeric(difftime(start_date,baby_date,units=c("days"))))
+
+    ##Using the difference between birth date and start date, create new column called phase
+    #according to Teresa's specified thresholds:
+    dfPerson <- dfPerson %>%
+      dplyr::mutate(phase= as.factor(dplyr::case_when(dplyr::between(days_dif,-730,-365) ~ "seasonal control",
+                                                      dplyr::between(days_dif,-364,-274) ~ "pre-conception",
+                                                      dplyr::between(days_dif,-273,-1) ~ "pregnancy",
+                                                      days_dif==0 ~ "birth",
+                                                      dplyr::between(days_dif,1,364) ~ "postpartum")))
+  }
+
   #Export to .csv if desired
   if(export == TRUE){
     dir.create("./processed data")
     readr::write_csv(dfPerson, file = stringr::str_c("./processed data/", idTarget,".csv"))
   }
+
 
   return(dfPerson)
 }
