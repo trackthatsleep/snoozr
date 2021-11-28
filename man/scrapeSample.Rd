@@ -4,9 +4,11 @@
 \alias{scrapeSample}
 \title{Scrapes fitbit JSON sleep data from all participants (subdirectories) in a data directory}
 \usage{
-scrapeSample(anon = FALSE, export = FALSE)
+scrapeSample(sampbirthdf = NULL, anon = FALSE, export = FALSE, ...)
 }
 \arguments{
+\item{sampbirthdf}{optional character file name (w/ extension) of supplemental data file of id and child birth date (babybirthdarte format: mm/dd/yyyy) in "data" subdirectory}
+
 \item{anon}{whether an anonymized df (and .csv, if export == TRUE) is desired}
 
 \item{export}{whether to export .csv of file to "processed data" subdirectory}

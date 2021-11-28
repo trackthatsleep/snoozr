@@ -4,10 +4,23 @@
 \alias{scrapePerson}
 \title{Scrapes fitbit JSON sleep data from a particular participant in data folder}
 \usage{
-scrapePerson(idTarget, anon = FALSE, export = FALSE)
+scrapePerson(
+  idTarget,
+  type = "event",
+  sleepdate = "start",
+  birthdf = NULL,
+  anon = FALSE,
+  export = FALSE
+)
 }
 \arguments{
 \item{idTarget}{character of participant (subdirectory) name to scrape}
+
+\item{type}{character input for whether "event"-level (default) or "day"-level data is desired}
+
+\item{sleepdate}{character input for whether sleep events straddling two dates (i.e., during the night) are coded to have occured based on "start" date (default) or "end" date. df returned will have a different number of rows depending on which option is selected, but sum(nsleep_day) (i.e., total number of events captured) will be consistent}
+
+\item{birthdf}{optional character file name (w/ extension) of supplemental data file of id and child birth date (babybirthdarte format: mm/dd/yyyy) in "data" subdirectory}
 
 \item{anon}{whether an anonymized df (and .csv, if export == TRUE) is desired}
 
