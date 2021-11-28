@@ -2,6 +2,8 @@
 #' Scrapes fitbit JSON sleep data from a particular participant in data folder
 #'
 #' @param idTarget character of participant (subdirectory) name to scrape
+#' @param type character input for whether "event"-level (default) or "day"-level data is desired
+#' @param sleepdate character input for whether sleep events straddling two dates (i.e., during the night) are coded to have occured based on "start" date (default) or "end" date. df returned will have a different number of rows depending on which option is selected, but sum(nsleep_day) (i.e., total number of events captured) will be consistent
 #' @param birthdf optional character file name (w/ extension) of supplemental data file of id and child birth date (babybirthdarte format: mm/dd/yyyy) in "data" subdirectory
 #' @param anon whether an anonymized df (and .csv, if export == TRUE) is desired
 #' @param export whether to export .csv of file to "processed data" subdirectory
@@ -10,7 +12,12 @@
 #' @export
 #'
 #' @examples
-scrapePerson <- function(idTarget, birthdf = NULL, anon = FALSE, export = FALSE){
+scrapePerson <- function(idTarget,
+                         type = "event",
+                         sleepdate = "start",
+                         birthdf = NULL,
+                         anon = FALSE,
+                         export = FALSE){
 
   #Get sub-directories and scrape IDs from folder name
   subdirs <- list.dirs(here::here("data"),
@@ -42,6 +49,67 @@ scrapePerson <- function(idTarget, birthdf = NULL, anon = FALSE, export = FALSE)
     dfPerson <- rbind(dfPerson, newdf)#new rows from ith json are appended
   }
 
+  #Remove duplicate entries
+  dfPerson <- dplyr::distinct(dfPerson)
+
+  #Need to split dates and times in Start/EndTime
+  StartTime_Split <-  stringr::str_split(dfPerson$StartTime, "T")
+  EndTime_Split <-  stringr::str_split(dfPerson$EndTime, "T")
+
+  dfPerson$newStartDate <- NA
+  dfPerson$newStartTime <- NA
+  dfPerson$newEndDate <- NA
+  dfPerson$newEndTime <- NA
+
+  for(i in 1:nrow(dfPerson)){
+    dfPerson$newStartDate[[i]] <- StartTime_Split[[i]][1]
+    dfPerson$newStartTime[[i]] <- StartTime_Split[[i]][2]
+    dfPerson$newEndDate[[i]] <- EndTime_Split[[i]][1]
+    dfPerson$newEndTime[[i]] <- EndTime_Split[[i]][2]
+  }
+
+  #Rearrange and recreate dateOfSleep based on sleepdate
+  if(sleepdate == "start"){
+    dfPerson <- dfPerson %>%
+      dplyr::mutate(newStartDate= lubridate::as_date(newStartDate),
+                    newEndDate= lubridate::as_date(newEndDate),
+                    dateOfSleep = newStartDate) %>%
+      dplyr::rename(startDate = newStartDate,
+             startTime = newStartTime,
+             endDate = newEndDate,
+             endTime = newEndTime) %>%
+      dplyr::select(type, dateOfSleep,
+                    startDate, startTime,
+                    endDate, endTime,
+                    MinutesAsleep, MinutesAwake,
+                    NumberofAwakenings, TimeinBed)
+  }else if(sleepdate == "end"){
+    dfPerson <- dfPerson %>%
+      dplyr::mutate(newStartDate= lubridate::as_date(newStartDate),
+                    newEndDate= lubridate::as_date(newEndDate),
+                    dateOfSleep = newEndDate) %>%
+      dplyr::rename(startDate = newStartDate,
+                    startTime = newStartTime,
+                    endDate = newEndDate,
+                    endTime = newEndTime) %>%
+      dplyr::select(type, dateOfSleep,
+                    startDate, startTime,
+                    endDate, endTime,
+                    MinutesAsleep, MinutesAwake,
+                    NumberofAwakenings, TimeinBed)
+  }
+
+  #Provide day-level output instead if requests
+  if(type == "day"){
+    dfPerson <- dfPerson %>%
+      dplyr::group_by(dateOfSleep) %>%
+      dplyr::summarise(nsleep_day = n(),
+                MinutesAsleep = sum(MinutesAsleep),
+                MinutesAwake = sum(MinutesAwake),
+                NumberofAwakenings = sum(NumberofAwakenings),
+                TimeinBed = sum(TimeinBed))
+  }
+
   #Add id (cryptographic if anon == TRUE)
   if(anon == FALSE){
     dfPerson <- dfPerson %>%
@@ -58,17 +126,17 @@ scrapePerson <- function(idTarget, birthdf = NULL, anon = FALSE, export = FALSE)
   #Append phases if birthdf file is supplied
   if(!is.null(birthdf)){
     #import birthdf
-    birthdates <- readr::read_csv(here::here("data",birthdf))
+    birthdates <- readr::read_csv(here::here("data",birthdf), show_col_types = FALSE)
 
     #bring over birthday info from birthdates
     dfPerson <- dplyr::left_join(dfPerson, birthdates, by = "id")
 
     #Convert dates to dates (orig. as character())
-    dfPerson <- dfPerson %>% dplyr::mutate(baby_date = as.Date(babybirthdate, "%m/%d/%Y"),
-                                       start_date = lubridate::as_date(StartTime))
+    dfPerson <- dfPerson %>% dplyr::mutate(baby_date = as.Date(babybirthdate, "%m/%d/%Y")) %>%
+      dplyr::select(-babybirthdate)
 
     #Calculate the difference between birth date and survey start date in days
-    dfPerson <- dfPerson %>% dplyr::mutate(days_dif = as.numeric(difftime(start_date,baby_date,units=c("days"))))
+    dfPerson <- dfPerson %>% dplyr::mutate(days_dif = as.numeric(difftime(dateOfSleep,baby_date,units=c("days"))))
 
     ##Using the difference between birth date and start date, create new column called phase
     #according to Teresa's specified thresholds:
@@ -83,9 +151,9 @@ scrapePerson <- function(idTarget, birthdf = NULL, anon = FALSE, export = FALSE)
   #Export to .csv if desired
   if(export == TRUE){
     dir.create("./processed data")
-    readr::write_csv(dfPerson, file = stringr::str_c("./processed data/", idTarget,".csv"))
+    dir.create("./processed data/individual files")
+    readr::write_csv(dfPerson, file = stringr::str_c("./processed data/individual files/", idTarget,".csv"))
   }
-
 
   return(dfPerson)
 }

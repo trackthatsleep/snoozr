@@ -8,7 +8,8 @@
 #' @export
 #'
 #' @examples
-scrapeSample <- function(sampbirthdf = NULL, anon = FALSE, export = FALSE){
+scrapeSample <- function(sampbirthdf = NULL, anon = FALSE,
+                         export = FALSE, ...){
   #Get sub-directories and scrape IDs from folder name
   subdirs <- list.dirs(here::here("data"),
                        recursive = FALSE)
@@ -18,25 +19,25 @@ scrapeSample <- function(sampbirthdf = NULL, anon = FALSE, export = FALSE){
                   recursive = FALSE)
 
   #scrape (and append birth info if sampbirthdf not NULL)
-  #if(is.null(sampbirthdf)){
+  if(is.null(sampbirthdf)){
     #scrape first id
-    dfSample <- scrapePerson(idTarget = ids[[1]])
+    dfSample <- scrapePerson(idTarget = ids[[1]], ...)
 
     #loop through scrapePerson, and append to dfSample
     for(i in 2:length(ids)){
-      newdf <- scrapePerson(idTarget = ids[[i]])
+      newdf <- scrapePerson(idTarget = ids[[i]], ...)
       dfSample <- rbind(dfSample, newdf)
     }
-  #}else if(!is.null(sampbirthdf)){
+  }else if(!is.null(sampbirthdf)){
     #scrape first id
-    dfSample <- scrapePerson(idTarget = ids[[1]], birthdf = sampbirthdf)
+    dfSample <- scrapePerson(idTarget = ids[[1]], birthdf = sampbirthdf, ...)
 
     #loop through scrapePerson, and append to dfSample
     for(i in 2:length(ids)){
-      newdf <- scrapePerson(idTarget = ids[[i]], birthdf = sampbirthdf)
+      newdf <- scrapePerson(idTarget = ids[[i]], birthdf = sampbirthdf, ...)
       dfSample <- rbind(dfSample, newdf)
     }
-  #}
+  }
 
 
   #anonymize w/ cryptographic id if necessary

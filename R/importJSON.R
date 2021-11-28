@@ -1,5 +1,3 @@
-
-
 #' Reads, flattens, and wrangles JSON fitbit sleep data
 #'
 #' @param path character of absolute file path to data/participant/sleep subdirectory
@@ -29,7 +27,7 @@ importJSON <- function(path){
     fjsonClassic <- fjson %>%
       dplyr::filter(type == "classic") %>%
       #Keep only the needed columns (different names than type == "stages")
-      dplyr::select(type, startTime,endTime,minutesAsleep,minutesAwake,
+      dplyr::select(type, dateOfSleep, startTime,endTime,minutesAsleep,minutesAwake,
                     levels.summary.awake.count,timeInBed) %>%
       #label the columns exactly as they appear in .csv
       dplyr::rename(StartTime=startTime,EndTime=endTime,MinutesAsleep =minutesAsleep,MinutesAwake=minutesAwake,
@@ -42,7 +40,7 @@ importJSON <- function(path){
     fjsonStages <- fjson %>%
       dplyr::filter(type == "stages") %>%
       #Keep only the needed columns (different names than type == "classic")
-      dplyr::select(type, startTime,endTime,minutesAsleep,minutesAwake,
+      dplyr::select(type, dateOfSleep,startTime,endTime,minutesAsleep,minutesAwake,
                     levels.summary.wake.count,timeInBed) %>%
       #label the columns exactly as they appear in .csv
       dplyr::rename(StartTime=startTime,EndTime=endTime,MinutesAsleep =minutesAsleep,MinutesAwake=minutesAwake,
