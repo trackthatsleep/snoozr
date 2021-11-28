@@ -23,28 +23,29 @@ importJSON <- function(path){
   fjsonTypeChkStagesSum <- sum(fjsonTypeChkStages)
 
   #Extracts classic if present
+  #' @importFrom rlang .data
   if(fjsonTypeChkClassSum > 0){
     fjsonClassic <- fjson %>%
-      dplyr::filter(type == "classic") %>%
+      dplyr::filter(.data$type == "classic") %>%
       #Keep only the needed columns (different names than type == "stages")
-      dplyr::select(type, dateOfSleep, startTime,endTime,minutesAsleep,minutesAwake,
-                    levels.summary.awake.count,timeInBed) %>%
+      dplyr::select(.data$type, .data$dateOfSleep, .data$startTime,.data$endTime,.data$minutesAsleep,.data$minutesAwake,
+                    .data$levels.summary.awake.count,.data$timeInBed) %>%
       #label the columns exactly as they appear in .csv
-      dplyr::rename(StartTime=startTime,EndTime=endTime,MinutesAsleep =minutesAsleep,MinutesAwake=minutesAwake,
-                    NumberofAwakenings=levels.summary.awake.count,TimeinBed=timeInBed)
+      dplyr::rename(StartTime=.data$startTime,EndTime=.data$endTime,MinutesAsleep =.data$minutesAsleep,MinutesAwake=.data$minutesAwake,
+                    NumberofAwakenings=.data$levels.summary.awake.count,TimeinBed=.data$timeInBed)
   }
 
   #Extracts stages if present
   if(fjsonTypeChkStagesSum > 0){
     #For type == "stages"
     fjsonStages <- fjson %>%
-      dplyr::filter(type == "stages") %>%
+      dplyr::filter(.data$type == "stages") %>%
       #Keep only the needed columns (different names than type == "classic")
-      dplyr::select(type, dateOfSleep,startTime,endTime,minutesAsleep,minutesAwake,
-                    levels.summary.wake.count,timeInBed) %>%
+      dplyr::select(.data$type, .data$dateOfSleep,.data$startTime,.data$endTime,.data$minutesAsleep,.data$minutesAwake,
+                    .data$levels.summary.wake.count,.data$timeInBed) %>%
       #label the columns exactly as they appear in .csv
-      dplyr::rename(StartTime=startTime,EndTime=endTime,MinutesAsleep =minutesAsleep,MinutesAwake=minutesAwake,
-                    NumberofAwakenings=levels.summary.wake.count,TimeinBed=timeInBed)
+      dplyr::rename(StartTime =.data$startTime,EndTime =.data$endTime,MinutesAsleep = .data$minutesAsleep,MinutesAwake = .data$minutesAwake,
+                    NumberofAwakenings= .data$levels.summary.wake.count,TimeinBed = .data$timeInBed)
   }
 
   #If both classic and stages present, merge, otherwise return one or other

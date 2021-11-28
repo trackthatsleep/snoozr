@@ -8,7 +8,7 @@
 #' @param anon whether an anonymized df (and .csv, if export == TRUE) is desired
 #' @param export whether to export .csv of file to "processed data" subdirectory
 #'
-#' @return
+#' @return df of scraped .json sleep data from subdirectory in data matching idTarget
 #' @export
 #'
 #' @examples
@@ -68,59 +68,60 @@ scrapePerson <- function(idTarget,
     dfPerson$newEndTime[[i]] <- EndTime_Split[[i]][2]
   }
 
+  #' @importFrom rlang .data
   #Rearrange and recreate dateOfSleep based on sleepdate
   if(sleepdate == "start"){
     dfPerson <- dfPerson %>%
-      dplyr::mutate(newStartDate= lubridate::as_date(newStartDate),
-                    newEndDate= lubridate::as_date(newEndDate),
-                    dateOfSleep = newStartDate) %>%
-      dplyr::rename(startDate = newStartDate,
-             startTime = newStartTime,
-             endDate = newEndDate,
-             endTime = newEndTime) %>%
-      dplyr::select(type, dateOfSleep,
-                    startDate, startTime,
-                    endDate, endTime,
-                    MinutesAsleep, MinutesAwake,
-                    NumberofAwakenings, TimeinBed)
+      dplyr::mutate(newStartDate= lubridate::as_date(.data$newStartDate),
+                    newEndDate= lubridate::as_date(.data$newEndDate),
+                    dateOfSleep = .data$newStartDate) %>%
+      dplyr::rename(startDate = .data$newStartDate,
+             startTime = .data$newStartTime,
+             endDate = .data$newEndDate,
+             endTime = .data$newEndTime) %>%
+      dplyr::select(.data$type, .data$dateOfSleep,
+                    .data$startDate, .data$startTime,
+                    .data$endDate, .data$endTime,
+                    .data$MinutesAsleep, .data$MinutesAwake,
+                    .data$NumberofAwakenings, .data$TimeinBed)
   }else if(sleepdate == "end"){
     dfPerson <- dfPerson %>%
-      dplyr::mutate(newStartDate= lubridate::as_date(newStartDate),
-                    newEndDate= lubridate::as_date(newEndDate),
-                    dateOfSleep = newEndDate) %>%
-      dplyr::rename(startDate = newStartDate,
-                    startTime = newStartTime,
-                    endDate = newEndDate,
-                    endTime = newEndTime) %>%
-      dplyr::select(type, dateOfSleep,
-                    startDate, startTime,
-                    endDate, endTime,
-                    MinutesAsleep, MinutesAwake,
-                    NumberofAwakenings, TimeinBed)
+      dplyr::mutate(newStartDate= lubridate::as_date(.data$newStartDate),
+                    newEndDate= lubridate::as_date(.data$newEndDate),
+                    dateOfSleep = .data$newEndDate) %>%
+      dplyr::rename(startDate = .data$newStartDate,
+                    startTime = .data$newStartTime,
+                    endDate = .data$newEndDate,
+                    endTime = .data$newEndTime) %>%
+      dplyr::select(.data$type, .data$dateOfSleep,
+                    .data$startDate, .data$startTime,
+                    .data$endDate, .data$endTime,
+                    .data$MinutesAsleep, .data$MinutesAwake,
+                    .data$NumberofAwakenings, .data$TimeinBed)
   }
 
   #Provide day-level output instead if requests
   if(type == "day"){
     dfPerson <- dfPerson %>%
-      dplyr::group_by(dateOfSleep) %>%
-      dplyr::summarise(nsleep_day = n(),
-                MinutesAsleep = sum(MinutesAsleep),
-                MinutesAwake = sum(MinutesAwake),
-                NumberofAwakenings = sum(NumberofAwakenings),
-                TimeinBed = sum(TimeinBed))
+      dplyr::group_by(.data$dateOfSleep) %>%
+      dplyr::summarise(nsleep_day = dplyr::n(),
+                MinutesAsleep = sum(.data$MinutesAsleep),
+                MinutesAwake = sum(.data$MinutesAwake),
+                NumberofAwakenings = sum(.data$NumberofAwakenings),
+                TimeinBed = sum(.data$TimeinBed))
   }
 
   #Add id (cryptographic if anon == TRUE)
   if(anon == FALSE){
     dfPerson <- dfPerson %>%
       dplyr::mutate(id = idTarget) %>%
-      dplyr::relocate(id)
+      dplyr::relocate(.data$id)
   }else if(anon == TRUE){
     #Create cryptographic hash for anonymized participant ids
     anon_id <- openssl::sha256(idTarget)
     dfPerson <- dfPerson %>%
       dplyr::mutate(id = anon_id) %>%
-      dplyr::relocate(id)#TODO: add exported pair of de-anon id?
+      dplyr::relocate(.data$id)#TODO: add exported pair of de-anon id?
   }
 
   #Append phases if birthdf file is supplied
@@ -132,11 +133,11 @@ scrapePerson <- function(idTarget,
     dfPerson <- dplyr::left_join(dfPerson, birthdates, by = "id")
 
     #Convert dates to dates (orig. as character())
-    dfPerson <- dfPerson %>% dplyr::mutate(baby_date = as.Date(babybirthdate, "%m/%d/%Y")) %>%
-      dplyr::select(-babybirthdate)
+    dfPerson <- dfPerson %>% dplyr::mutate(baby_date = as.Date(.data$babybirthdate, "%m/%d/%Y")) %>%
+      dplyr::select(-.data$babybirthdate)
 
     #Calculate the difference between birth date and survey start date in days
-    dfPerson <- dfPerson %>% dplyr::mutate(days_dif = as.numeric(difftime(dateOfSleep,baby_date,units=c("days"))))
+    dfPerson <- dfPerson %>% dplyr::mutate(days_dif = as.numeric(difftime(.data$dateOfSleep,.data$baby_date,units=c("days"))))
 
     ##Using the difference between birth date and start date, create new column called phase
     #according to Teresa's specified thresholds:

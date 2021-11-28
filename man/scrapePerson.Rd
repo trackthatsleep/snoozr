@@ -27,7 +27,7 @@ scrapePerson(
 \item{export}{whether to export .csv of file to "processed data" subdirectory}
 }
 \value{
-
+df of scraped .json sleep data from subdirectory in data matching idTarget
 }
 \description{
 Scrapes fitbit JSON sleep data from a particular participant in data folder

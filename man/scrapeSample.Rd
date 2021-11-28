@@ -12,9 +12,11 @@ scrapeSample(sampbirthdf = NULL, anon = FALSE, export = FALSE, ...)
 \item{anon}{whether an anonymized df (and .csv, if export == TRUE) is desired}
 
 \item{export}{whether to export .csv of file to "processed data" subdirectory}
+
+\item{...}{Additional arguments passed to each loop of scrapePerson (e.g., type, sleepdate)}
 }
 \value{
-
+df of scraped .json sleep data from all subdirectories in data
 }
 \description{
 Scrapes fitbit JSON sleep data from all participants (subdirectories) in a data directory

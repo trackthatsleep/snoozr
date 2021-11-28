@@ -3,8 +3,9 @@
 #' @param sampbirthdf optional character file name (w/ extension) of supplemental data file of id and child birth date (babybirthdarte format: mm/dd/yyyy) in "data" subdirectory
 #' @param anon whether an anonymized df (and .csv, if export == TRUE) is desired
 #' @param export whether to export .csv of file to "processed data" subdirectory
+#' @param ... Additional arguments passed to each loop of scrapePerson (e.g., type, sleepdate)
 #'
-#' @return
+#' @return df of scraped .json sleep data from all subdirectories in data
 #' @export
 #'
 #' @examples
