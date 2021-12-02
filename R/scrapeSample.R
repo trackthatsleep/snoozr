@@ -35,8 +35,11 @@ scrapeSample <- function(sampbirthdf = NULL, anon = FALSE,
 
     #loop through scrapePerson, and append to dfSample
     for(i in 2:length(ids)){
-      newdf <- scrapePerson(idTarget = ids[[i]], birthdf = sampbirthdf, ...)
-      dfSample <- rbind(dfSample, newdf)
+      tryCatch({
+        newdf <- scrapePerson(idTarget = ids[[i]], birthdf = sampbirthdf, ...)
+        dfSample <- rbind(dfSample, newdf)
+      }, error = function(e){})
+
     }
   }
 

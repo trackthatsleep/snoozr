@@ -19,15 +19,31 @@ scrapePerson <- function(idTarget,
                          anon = FALSE,
                          export = FALSE){
 
+  #Error if "data" directory not present
+  if(dir.exists("data")==FALSE){
+    stop("snoozr cannot detect a folder called 'data' in your current working directory")
+  }
+
   #Get sub-directories and scrape IDs from folder name
   subdirs <- list.dirs(here::here("data"),
                        recursive = FALSE)
 
   subdirMatch <- stringr::str_detect(subdirs, idTarget)#match idTarget to path
+
+  #Error if no subdirectory matches user name
+  if(!any(subdirMatch) == TRUE){
+    stop(paste("there is no subdirectory in 'data' for user", idTarget))
+  }
+
   subdir <- as.data.frame(cbind(subdirs, subdirMatch))#combine paths and match
   subdir <- subdir %>% #rename to path and only retain
     dplyr::rename(path = subdirs) %>% #matching path
     dplyr::filter(subdirMatch == TRUE)
+
+  #Error if there is no "Sleep" subdirectory
+  if(dir.exists(paste("data/", idTarget, "/Sleep", sep = "")) == FALSE){
+    stop(paste("there is no 'Sleep' directory for user", idTarget))
+  }
 
   #Get file names from subdir
   files <- as.data.frame(list.files(stringr::str_c("./data/", idTarget, "/sleep/")))
@@ -37,6 +53,11 @@ scrapePerson <- function(idTarget,
   jsons <- files %>%
     dplyr::filter(stringr::str_detect(file, "json")) %>%
     dplyr::filter(stringr::str_detect(file, "sleep"))
+
+  #Warn if there are no .json files
+  if(nrow(jsons) < 1){
+    warning(paste("there are no .json files for user", idTarget))
+  }
 
   #Import first .json
   path <- stringr::str_c("./data/", idTarget, "/sleep/", jsons$file[[1]])
