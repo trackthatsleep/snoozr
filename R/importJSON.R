@@ -7,11 +7,12 @@
 #'
 #' @examples
 
-importJSON <- function(path){
-  #import
+importJSON <- function(path, level1 = FALSE){
+  #import for level2 (and maybe level1)
   fjson <-jsonlite::fromJSON(path)
-  #reduce the nesting within the file by converting to columns, then convert to a dataframe
-  fjson <- as.data.frame(jsonlite::flatten(fjson))
+
+  #reduce the nesting for level2 within the file by converting to columns, then convert to a dataframe
+  fjson.df <- as.data.frame(jsonlite::flatten(fjson))
 
   #Checks for classic and stages
   fjsonType <- names(table(fjson$type))
@@ -22,40 +23,46 @@ importJSON <- function(path){
   fjsonTypeChkStages <- stringr::str_detect(fjsonType, "stages")
   fjsonTypeChkStagesSum <- sum(fjsonTypeChkStages)
 
-  #Extracts classic if present
-  #' @importFrom rlang .data
-  if(fjsonTypeChkClassSum > 0){
-    fjsonClassic <- fjson %>%
-      dplyr::filter(.data$type == "classic") %>%
-      #Keep only the needed columns (different names than type == "stages")
-      dplyr::select(.data$type, .data$dateOfSleep, .data$startTime,.data$endTime,.data$minutesAsleep,.data$minutesAwake,
-                    .data$levels.summary.awake.count,.data$timeInBed) %>%
-      #label the columns exactly as they appear in .csv
-      dplyr::rename(StartTime=.data$startTime,EndTime=.data$endTime,MinutesAsleep =.data$minutesAsleep,MinutesAwake=.data$minutesAwake,
-                    NumberofAwakenings=.data$levels.summary.awake.count,TimeinBed=.data$timeInBed)
+  #If level 1 data is not requested, .json can be flatened/level 2 extracted out
+  if(!isTRUE(level1)){
+
+    #Extracts classic if present
+    if(fjsonTypeChkClassSum > 0){
+      fjsonClassic <- fjson.df %>%
+        dplyr::filter(type == "classic") %>%
+        #Keep only the needed columns (different names than type == "stages")
+        dplyr::select(type, dateOfSleep, startTime,endTime,minutesAsleep,minutesAwake,
+                      levels.summary.awake.count,timeInBed) %>%
+        #label the columns exactly as they appear in .csv
+        dplyr::rename(StartTime=startTime,EndTime=endTime,MinutesAsleep =minutesAsleep,MinutesAwake=minutesAwake,
+                      NumberofAwakenings=levels.summary.awake.count,TimeinBed=timeInBed)
+    }
+
+    #Extracts stages if present
+    if(fjsonTypeChkStagesSum > 0){
+      #For type == "stages"
+      fjsonStages <- fjson.df %>%
+        dplyr::filter(type == "stages") %>%
+        #Keep only the needed columns (different names than type == "classic")
+        dplyr::select(type, dateOfSleep,startTime,endTime,minutesAsleep,minutesAwake,
+                      levels.summary.wake.count,timeInBed) %>%
+        #label the columns exactly as they appear in .csv
+        dplyr::rename(StartTime=startTime,EndTime=endTime,MinutesAsleep =minutesAsleep,MinutesAwake=minutesAwake,
+                      NumberofAwakenings=levels.summary.wake.count,TimeinBed=timeInBed)
+    }
+
+    #If both classic and stages present, merge, otherwise return one or other
+    if(fjsonTypeChkClassSum > 0 & fjsonTypeChkStagesSum > 0){
+      fjsonFinal <- rbind(fjsonClassic, fjsonStages)
+    }else if(fjsonTypeChkClassSum > 0 & fjsonTypeChkStagesSum == 0){
+      fjsonFinal <- fjsonClassic
+    }else if(fjsonTypeChkClassSum == 0 & fjsonTypeChkStagesSum > 0){
+      fjsonFinal <- fjsonStages
+    }
+  }else if(isTRUE(level1)){#if level 1 is requested, retrieve and stitch both sources together
+
   }
 
-  #Extracts stages if present
-  if(fjsonTypeChkStagesSum > 0){
-    #For type == "stages"
-    fjsonStages <- fjson %>%
-      dplyr::filter(.data$type == "stages") %>%
-      #Keep only the needed columns (different names than type == "classic")
-      dplyr::select(.data$type, .data$dateOfSleep,.data$startTime,.data$endTime,.data$minutesAsleep,.data$minutesAwake,
-                    .data$levels.summary.wake.count,.data$timeInBed) %>%
-      #label the columns exactly as they appear in .csv
-      dplyr::rename(StartTime =.data$startTime,EndTime =.data$endTime,MinutesAsleep = .data$minutesAsleep,MinutesAwake = .data$minutesAwake,
-                    NumberofAwakenings= .data$levels.summary.wake.count,TimeinBed = .data$timeInBed)
-  }
-
-  #If both classic and stages present, merge, otherwise return one or other
-  if(fjsonTypeChkClassSum > 0 & fjsonTypeChkStagesSum > 0){
-    fjsonFinal <- rbind(fjsonClassic, fjsonStages)
-  }else if(fjsonTypeChkClassSum > 0 & fjsonTypeChkStagesSum == 0){
-    fjsonFinal <- fjsonClassic
-  }else if(fjsonTypeChkClassSum == 0 & fjsonTypeChkStagesSum > 0){
-    fjsonFinal <- fjsonStages
-  }
 
   return(fjsonFinal)
 }
