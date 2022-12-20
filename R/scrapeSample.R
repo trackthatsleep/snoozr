@@ -23,11 +23,10 @@ scrapeSample <- function(sampbirthdf = NULL, anon = FALSE,
   if(is.null(sampbirthdf)){
     #scrape first id
     dfSample <- scrapePerson(idTarget = ids[[1]], ...)
-
     #loop through scrapePerson, and append to dfSample
     for(i in 2:length(ids)){
       newdf <- scrapePerson(idTarget = ids[[i]], ...)
-      dfSample <- rbind(dfSample, newdf)
+      dfSample <- dplyr::bind_rows(dfSample, newdf)
     }
   }else if(!is.null(sampbirthdf)){
     #scrape first id
@@ -37,7 +36,7 @@ scrapeSample <- function(sampbirthdf = NULL, anon = FALSE,
     for(i in 2:length(ids)){
       tryCatch({
         newdf <- scrapePerson(idTarget = ids[[i]], birthdf = sampbirthdf, ...)
-        dfSample <- rbind(dfSample, newdf)
+        dfSample <- dplyr::bind_rows(dfSample, newdf)
       }, error = function(e){})
 
     }

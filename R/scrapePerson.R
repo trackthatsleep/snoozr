@@ -71,7 +71,7 @@ scrapePerson <- function(idTarget,
     for (i in 2:nrow(jsons)) {
       newpath <- stringr::str_c("./data/", idTarget, "/sleep/", jsons$file[[i]])#get the ith path
       newdf <- importJSON(newpath, level1 = FALSE)#import json from ith path
-      dfPerson <- rbind(dfPerson, newdf)#new rows from ith json are appended
+      dfPerson <- dplyr::bind_rows(dfPerson, newdf)#new rows from ith json are appended
     }
   }else if(isTRUE(epoch30)){
     dfPerson <- importJSON(path, level1 = TRUE)
@@ -80,7 +80,7 @@ scrapePerson <- function(idTarget,
     for (i in 2:nrow(jsons)) {
       newpath <- stringr::str_c("./data/", idTarget, "/sleep/", jsons$file[[i]])#get the ith path
       newdf <- importJSON(newpath, level1 = TRUE)#import json from ith path
-      dfPerson <- rbind(dfPerson, newdf)#new rows from ith json are appended
+      dfPerson <- dplyr::bind_rows(dfPerson, newdf)#new rows from ith json are appended
     }
   }
 
