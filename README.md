@@ -19,6 +19,14 @@ You can install the development version of snoozr like so:
 devtools::install_github("trackthatsleep/snoozr")
 ```
 
+## Collaboration and Troubleshooting
+
+Please submit any problems or feature requests via the snoozr
+[issues](https://github.com/trackthatsleep/snoozr/issues) page.
+
+If you are interested in collaborating on the development of snoozr,
+please contact Dr. Lillis.
+
 ## General use and required data management structure
 
 snoozr currently has two primary user-facing functions to help with data
