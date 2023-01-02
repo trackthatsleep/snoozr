@@ -4,10 +4,12 @@
 \alias{importJSON}
 \title{Reads, flattens, and wrangles JSON fitbit sleep data}
 \usage{
-importJSON(path)
+importJSON(path, level1 = FALSE)
 }
 \arguments{
 \item{path}{character of absolute file path to data/participant/sleep subdirectory}
+
+\item{level1}{logical (default FALSE) of whether to scrape level-1 "30 sec epoch" data (nested within level-2 of day)}
 }
 \value{
 df of wrangled sleep data (date-times, minutes asleep, minutes awake, number of times awake, time in bed)

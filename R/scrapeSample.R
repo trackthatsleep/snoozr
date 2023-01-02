@@ -9,6 +9,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#'samp.out <- scrapeSample(epoch30 = TRUE)
+#'}
+
 scrapeSample <- function(sampbirthdf = NULL, anon = FALSE,
                          export = FALSE, ...){
   #Get sub-directories and scrape IDs from folder name
@@ -19,29 +23,48 @@ scrapeSample <- function(sampbirthdf = NULL, anon = FALSE,
                   full.names = FALSE,#nix full file-path
                   recursive = FALSE)
 
+  n_ids <- length(ids)
   #scrape (and append birth info if sampbirthdf not NULL)
   if(is.null(sampbirthdf)){
     #scrape first id
     dfSample <- scrapePerson(idTarget = ids[[1]], ...)
     #loop through scrapePerson, and append to dfSample
-    for(i in 2:length(ids)){
-      newdf <- scrapePerson(idTarget = ids[[i]], ...)
-      dfSample <- dplyr::bind_rows(dfSample, newdf)
+    for(i in 2:n_ids){
+
+      skip_to_next <- FALSE
+
+      tryCatch({
+        newdf <- scrapePerson(idTarget = ids[[i]], ...)
+        dfSample <- dplyr::bind_rows(dfSample, newdf)
+      },
+      error = function(e) { skip_to_next <<- TRUE
+      }
+      )
+
+      if(skip_to_next) { next }
+
     }
   }else if(!is.null(sampbirthdf)){
     #scrape first id
     dfSample <- scrapePerson(idTarget = ids[[1]], birthdf = sampbirthdf, ...)
 
     #loop through scrapePerson, and append to dfSample
-    for(i in 2:length(ids)){
+    for(i in 2:n_ids){
+      skip_to_next <- FALSE
+
       tryCatch({
-        newdf <- scrapePerson(idTarget = ids[[i]], birthdf = sampbirthdf, ...)
+        newdf <- scrapePerson(idTarget = ids[[i]], ...)
         dfSample <- dplyr::bind_rows(dfSample, newdf)
-      }, error = function(e){})
+      },
+      error = function(e) {
+        skip_to_next <<- TRUE
+      }
+      )
+
+      if(skip_to_next) { next }
 
     }
   }
-
 
   #anonymize w/ cryptographic id if necessary
   if(anon ==TRUE){

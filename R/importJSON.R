@@ -6,7 +6,6 @@
 #' @return df of wrangled sleep data (date-times, minutes asleep, minutes awake, number of times awake, time in bed)
 #' @export
 #'
-#' @examples
 
 importJSON <- function(path, level1 = FALSE){
   #import for level2 (and maybe level1)

@@ -13,6 +13,12 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#'TL.out.epoch <- scrapePerson(idTarget ="TL001",
+#'birthdf = "participants.csv",
+#'epoch30 = TRUE,
+#'export = FALSE)
+#'}
 scrapePerson <- function(idTarget,
                          type = "event",
                          sleepdate = "start",
@@ -56,8 +62,9 @@ scrapePerson <- function(idTarget,
     dplyr::filter(stringr::str_detect(file, "json")) %>%
     dplyr::filter(stringr::str_detect(file, "sleep"))
 
+  n_jsons <- nrow(jsons)
   #Warn if there are no .json files
-  if(nrow(jsons) < 1){
+  if(n_jsons < 1){
     warning(paste("there are no .json files for user", idTarget))
   }
 
@@ -68,19 +75,36 @@ scrapePerson <- function(idTarget,
     dfPerson <- importJSON(path, level1 = FALSE)
 
     #for each json after the 1st...(2nd onward)
-    for (i in 2:nrow(jsons)) {
-      newpath <- stringr::str_c("./data/", idTarget, "/sleep/", jsons$file[[i]])#get the ith path
-      newdf <- importJSON(newpath, level1 = FALSE)#import json from ith path
-      dfPerson <- dplyr::bind_rows(dfPerson, newdf)#new rows from ith json are appended
+    for (i in 2:n_jsons) {
+
+      tryCatch(
+        {
+          newpath <- stringr::str_c("./data/", idTarget, "/sleep/", jsons$file[[i]])#get the ith path
+          newdf <- importJSON(newpath, level1 = FALSE)#import json from ith path
+          dfPerson <- dplyr::bind_rows(dfPerson, newdf)
+        },
+        error = function(e){
+          error_message <- paste("There was an error importing file", jsons$file[[i]], "for participant", idTarget, "; it was skipped.")
+          message(error_message)
+        }
+      )
     }
   }else if(isTRUE(epoch30)){
     dfPerson <- importJSON(path, level1 = TRUE)
 
     #for each json after the 1st...(2nd onward)
-    for (i in 2:nrow(jsons)) {
-      newpath <- stringr::str_c("./data/", idTarget, "/sleep/", jsons$file[[i]])#get the ith path
-      newdf <- importJSON(newpath, level1 = TRUE)#import json from ith path
-      dfPerson <- dplyr::bind_rows(dfPerson, newdf)#new rows from ith json are appended
+    for (i in 2:n_jsons) {
+      tryCatch(
+        {
+          newpath <- stringr::str_c("./data/", idTarget, "/sleep/", jsons$file[[i]])#get the ith path
+          newdf <- importJSON(newpath, level1 = TRUE)#import json from ith path
+          dfPerson <- dplyr::bind_rows(dfPerson, newdf)
+        },
+        error = function(e){
+          error_message <- paste("There was an error importing file", jsons$file[[i]], "for participant", idTarget, "; it was skipped.")
+          message(error_message)
+        }
+      )
     }
   }
 
@@ -115,10 +139,10 @@ scrapePerson <- function(idTarget,
              startTime = .data$newStartTime,
              endDate = .data$newEndDate,
              endTime = .data$newEndTime) %>%
-      dplyr::select(-StartTime, -EndTime) %>%
-      dplyr::relocate(type, dateOfSleep, startDate, startTime,
-                      endDate, endTime, MinutesAsleep, MinutesAwake,
-                      NumberofAwakenings, TimeinBed)
+      dplyr::select(-.data$StartTime, -.data$EndTime) %>%
+      dplyr::relocate(type, .data$dateOfSleep, .data$startDate, .data$startTime,
+                      .data$endDate, .data$endTime, .data$MinutesAsleep, .data$MinutesAwake,
+                      .data$NumberofAwakenings, .data$TimeinBed)
   }else if(sleepdate == "end"){
     dfPerson <- dfPerson %>%
       dplyr::mutate(newStartDate= lubridate::as_date(.data$newStartDate),
@@ -128,10 +152,10 @@ scrapePerson <- function(idTarget,
                     startTime = .data$newStartTime,
                     endDate = .data$newEndDate,
                     endTime = .data$newEndTime) %>%
-      dplyr::select(-StartTime, -EndTime) %>%
-      dplyr::relocate(type, dateOfSleep, startDate, startTime,
-                      endDate, endTime, MinutesAsleep, MinutesAwake,
-                      NumberofAwakenings, TimeinBed)
+      dplyr::select(-.data$StartTime, -.data$EndTime) %>%
+      dplyr::relocate(type, .data$dateOfSleep, .data$startDate, .data$startTime,
+                      .data$endDate, .data$endTime, .data$MinutesAsleep, .data$MinutesAwake,
+                      .data$NumberofAwakenings, .data$TimeinBed)
   }
 
   #Provide day-level output instead if requests
@@ -149,13 +173,13 @@ scrapePerson <- function(idTarget,
   if(anon == FALSE){
     dfPerson <- dfPerson %>%
       dplyr::mutate(id = idTarget) %>%
-      dplyr::relocate(id)
+      dplyr::relocate(.data$id)
   }else if(anon == TRUE){
     #Create cryptographic hash for anonymized participant ids
     anon_id <- openssl::sha256(idTarget)
     dfPerson <- dfPerson %>%
       dplyr::mutate(id = anon_id) %>%
-      dplyr::relocate(id)#TODO: add exported pair of de-anon id?
+      dplyr::relocate(.data$id)#TODO: add exported pair of de-anon id?
   }
 
   #Append phases if birthdf file is supplied
@@ -168,12 +192,12 @@ scrapePerson <- function(idTarget,
 
     #Convert dates to dates (orig. as character())
     dfPerson <- dfPerson %>%
-      dplyr::mutate(baby_date = as.Date(babybirthdate, "%m/%d/%Y")) %>%
-      dplyr::select(-babybirthdate)
+      dplyr::mutate(baby_date = as.Date(.data$babybirthdate, "%m/%d/%Y")) %>%
+      dplyr::select(-.data$babybirthdate)
 
     #Calculate the difference between birth date and survey start date in days
     dfPerson <- dfPerson %>%
-      dplyr::mutate(days_dif = as.numeric(difftime(dateOfSleep,baby_date,units=c("days"))))
+      dplyr::mutate(days_dif = as.numeric(difftime(.data$dateOfSleep,.data$baby_date,units=c("days"))))
 
     ##Using the difference between birth date and start date, create new column called phase
     #according to Teresa's specified thresholds:
@@ -185,12 +209,16 @@ scrapePerson <- function(idTarget,
                                                       dplyr::between(days_dif,1,364) ~ "postpartum")))
   }
 
+  dfPerson <- dfPerson %>%
+    dplyr::arrange(dplyr::desc(.data$dateTime))
+
   #Export to .csv if desired
   if(export == TRUE){
     dir.create("./processed data")
     dir.create("./processed data/individual files")
     readr::write_csv(dfPerson, file = stringr::str_c("./processed data/individual files/", idTarget,".csv"))
   }
+
 
   return(dfPerson)
 }

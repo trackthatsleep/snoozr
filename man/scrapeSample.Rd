@@ -21,3 +21,8 @@ df of scraped .json sleep data from all subdirectories in data
 \description{
 Scrapes fitbit JSON sleep data from all participants (subdirectories) in a data directory
 }
+\examples{
+\dontrun{
+samp.out <- scrapeSample(epoch30 = TRUE)
+}
+}
