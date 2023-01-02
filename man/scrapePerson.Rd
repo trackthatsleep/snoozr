@@ -10,7 +10,8 @@ scrapePerson(
   sleepdate = "start",
   birthdf = NULL,
   anon = FALSE,
-  export = FALSE
+  export = FALSE,
+  epoch30 = FALSE
 )
 }
 \arguments{
@@ -25,10 +26,20 @@ scrapePerson(
 \item{anon}{whether an anonymized df (and .csv, if export == TRUE) is desired}
 
 \item{export}{whether to export .csv of file to "processed data" subdirectory}
+
+\item{epoch30}{whether to scrape 30-sec epoch data (default FALSE)}
 }
 \value{
 df of scraped .json sleep data from subdirectory in data matching idTarget
 }
 \description{
 Scrapes fitbit JSON sleep data from a particular participant in data folder
+}
+\examples{
+\dontrun{
+TL.out.epoch <- scrapePerson(idTarget ="TL001",
+birthdf = "participants.csv",
+epoch30 = TRUE,
+export = FALSE)
+}
 }
