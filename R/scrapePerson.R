@@ -211,6 +211,7 @@ scrapePerson <- function(idTarget,
 
   if(isTRUE(rawdata)){
     dfPerson <- dfPerson %>%
+      dplyr::filter(!is.na(NumberofAwakenings)) %>%
       dplyr::arrange(dplyr::desc(.data$dateTime))
   }
 
