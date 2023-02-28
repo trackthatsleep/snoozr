@@ -71,10 +71,10 @@ tl001.df <- scrapePerson(idTarget ="TL001", type = "day")
 
 ```
 
-If you prefer to also extract more granular 30-second epoch data, there is an option for this as well, though be aware that parsing of this resolution can be quite time-consuming. When this option is set to TRUE, the data frame returned repeats event-level data for each instance of unique 30-second epoch data (i.e., it returns a dataset amenable to multilevel modeling)
+If you prefer to also extract more granular data, there is an option for this as well, though be aware that parsing of this resolution can be quite time-consuming. When this option is set to TRUE, the data frame returned repeats event-level data for each instance that the fitbit device assessed (i.e., it returns a data set amenable to multilevel modeling)
 
-```{r person_epoc, echo = T, eval = F}
-tl001.df <- scrapePerson(idTarget ="TL001", epoch30 = TRUE)
+```{r person_raw, echo = T, eval = F}
+tl001.df <- scrapePerson(idTarget ="TL001", rawdata = TRUE)
 
 ```
 
@@ -86,9 +86,9 @@ Other potentially helpful options include:
 
 ## scrapeSample()
 
-`scrapeSample()` is the function to use when you wish to convert the .json files of *all* users, into a flattened data frame for further description, visualization, and/or analysis. Its arguments mostly parallel those of `scrapePerson()`, and users need not supply a target ID (as in `scrapePerson()`) as `scrapeSample()` will simply identify all unique subdirectories (i.e., for each participant) in your data subdirectory. Users should be aware that using `scrapeSample()` with `epoch30 = TRUE` can be especially time-consuming. 
+`scrapeSample()` is the function to use when you wish to convert the .json files of *all* users, into a flattened data frame for further description, visualization, and/or analysis. Its arguments mostly parallel those of `scrapePerson()`, and users need not supply a target ID (as in `scrapePerson()`) as `scrapeSample()` will simply identify all unique subdirectories (i.e., for each participant) in your data subdirectory. Users should be aware that using `scrapeSample()` with `rawdata = TRUE` can be especially time-consuming. 
 
-```{r sample_epoc, echo = T, eval = F}
-samp.df <- scrapePerson(epoch30 = TRUE)
+```{r sample_raw, echo = T, eval = F}
+samp.df <- scrapePerson(rawdata = TRUE)
 
 ```

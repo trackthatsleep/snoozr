@@ -74,15 +74,15 @@ optionally aggregate over a day if that format of data is preferred:
 tl001.df <- scrapePerson(idTarget ="TL001", type = "day")
 ```
 
-If you prefer to also extract more granular 30-second epoch data, there
-is an option for this as well, though be aware that parsing of this
-resolution can be quite time-consuming. When this option is set to TRUE,
-the data frame returned repeats event-level data for each instance of
-unique 30-second epoch data (i.e., it returns a dataset amenable to
-multilevel modeling)
+If you prefer to also extract more granular data, there is an option for
+this as well, though be aware that parsing of this resolution can be
+quite time-consuming. When this option is set to TRUE, the data frame
+returned repeats event-level data for each instance that the fitbit
+device assessed (i.e., it returns a data set amenable to multilevel
+modeling)
 
 ``` r
-tl001.df <- scrapePerson(idTarget ="TL001", epoch30 = TRUE)
+tl001.df <- scrapePerson(idTarget ="TL001", rawdata = TRUE)
 ```
 
 Other potentially helpful options include:
@@ -104,8 +104,8 @@ parallel those of `scrapePerson()`, and users need not supply a target
 ID (as in `scrapePerson()`) as `scrapeSample()` will simply identify all
 unique subdirectories (i.e., for each participant) in your data
 subdirectory. Users should be aware that using `scrapeSample()` with
-`epoch30 = TRUE` can be especially time-consuming.
+`rawdata = TRUE` can be especially time-consuming.
 
 ``` r
-samp.df <- scrapePerson(epoch30 = TRUE)
+samp.df <- scrapePerson(rawdata = TRUE)
 ```

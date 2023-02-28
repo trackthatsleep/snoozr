@@ -7,7 +7,7 @@
 #' @param birthdf optional character file name (w/ extension) of supplemental data file of id and child birth date (babybirthdarte format: mm/dd/yyyy) in "data" subdirectory
 #' @param anon whether an anonymized df (and .csv, if export == TRUE) is desired
 #' @param export whether to export .csv of file to "processed data" subdirectory
-#' @param epoch30 whether to scrape 30-sec epoch data (default FALSE)
+#' @param rawdata whether to scrape 30-sec epoch data (default FALSE)
 #'
 #' @return df of scraped .json sleep data from subdirectory in data matching idTarget
 #' @export
@@ -16,7 +16,7 @@
 #' \dontrun{
 #'TL.out.epoch <- scrapePerson(idTarget ="TL001",
 #'birthdf = "participants.csv",
-#'epoch30 = TRUE,
+#'rawdata = TRUE,
 #'export = FALSE)
 #'}
 scrapePerson <- function(idTarget,
@@ -25,7 +25,7 @@ scrapePerson <- function(idTarget,
                          birthdf = NULL,
                          anon = FALSE,
                          export = FALSE,
-                         epoch30 = FALSE){
+                         rawdata = FALSE){
 
   #Error if "data" directory not present
   if(dir.exists("data")==FALSE){
@@ -71,7 +71,7 @@ scrapePerson <- function(idTarget,
   #Import first .json
   path <- stringr::str_c("./data/", idTarget, "/sleep/", jsons$file[[1]])
 
-  if(!isTRUE(epoch30)){
+  if(!isTRUE(rawdata)){
     dfPerson <- importJSON(path, level1 = FALSE)
 
     #for each json after the 1st...(2nd onward)
@@ -89,7 +89,7 @@ scrapePerson <- function(idTarget,
         }
       )
     }
-  }else if(isTRUE(epoch30)){
+  }else if(isTRUE(rawdata)){
     dfPerson <- importJSON(path, level1 = TRUE)
 
     #for each json after the 1st...(2nd onward)

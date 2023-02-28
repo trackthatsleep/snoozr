@@ -23,6 +23,6 @@ Scrapes fitbit JSON sleep data from all participants (subdirectories) in a data 
 }
 \examples{
 \dontrun{
-samp.out <- scrapeSample(epoch30 = TRUE)
+samp.out <- scrapeSample(rawdata = TRUE)
 }
 }

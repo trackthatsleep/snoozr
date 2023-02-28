@@ -10,7 +10,7 @@
 #'
 #' @examples
 #' \dontrun{
-#'samp.out <- scrapeSample(epoch30 = TRUE)
+#'samp.out <- scrapeSample(rawdata = TRUE)
 #'}
 
 scrapeSample <- function(sampbirthdf = NULL, anon = FALSE,
