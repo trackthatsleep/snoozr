@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' \dontrun{
-#'TL.out.epoch <- scrapePerson(idTarget ="TL001",
+#'TL.out.raw <- scrapePerson(idTarget ="TL001",
 #'birthdf = "participants.csv",
 #'rawdata = TRUE,
 #'export = FALSE)
@@ -209,8 +209,10 @@ scrapePerson <- function(idTarget,
                                                       dplyr::between(days_dif,1,364) ~ "postpartum")))
   }
 
-  dfPerson <- dfPerson %>%
-    dplyr::arrange(dplyr::desc(.data$dateTime))
+  if(isTRUE(rawdata)){
+    dfPerson <- dfPerson %>%
+      dplyr::arrange(dplyr::desc(.data$dateTime))
+  }
 
   #Export to .csv if desired
   if(export == TRUE){
