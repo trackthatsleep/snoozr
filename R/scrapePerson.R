@@ -7,7 +7,8 @@
 #' @param birthdf optional character file name (w/ extension) of supplemental data file of id and child birth date (babybirthdarte format: mm/dd/yyyy) in "data" subdirectory
 #' @param anon whether an anonymized df (and .csv, if export == TRUE) is desired
 #' @param export whether to export .csv of file to "processed data" subdirectory
-#' @param rawdata whether to scrape 30-sec epoch data (default FALSE)
+#' @param rawdata whether to scrape raw data (default is false)
+#' @param epoch whether to return 30 or 60 second epoch data (requires rawdata = TRUE)
 #'
 #' @return df of scraped .json sleep data from subdirectory in data matching idTarget
 #' @export
@@ -25,7 +26,8 @@ scrapePerson <- function(idTarget,
                          birthdf = NULL,
                          anon = FALSE,
                          export = FALSE,
-                         rawdata = FALSE){
+                         rawdata = FALSE,
+                         epoch = NULL){
 
   #Error if "data" directory not present
   if(dir.exists("data")==FALSE){
@@ -211,8 +213,20 @@ scrapePerson <- function(idTarget,
 
   if(isTRUE(rawdata)){
     dfPerson <- dfPerson %>%
-      dplyr::filter(!is.na(NumberofAwakenings)) %>%
+      dplyr::filter(!is.na(.data$NumberofAwakenings)) %>%
       dplyr::arrange(dplyr::desc(.data$dateTime))
+  }
+
+  if(!is.null(epoch)){
+    if(isTRUE(rawdata) & epoch == 30){
+      dfPerson<- expandEpoch(dfPerson, epoch = 30)
+    }else if (isTRUE(rawdata) & epoch == 60){
+      dfPerson<- expandEpoch(dfPerson, epoch = 60)
+    }else if(!isTRUE(rawdata) & epoch == 30){
+      stop("epoch = 30 requires rawdata = TRUE")
+    }else if(!isTRUE(rawdata) & epoch == 60){
+      stop("epoch = 60 requires rawdata = TRUE")
+    }
   }
 
   #Export to .csv if desired

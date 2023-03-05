@@ -91,6 +91,8 @@ Other potentially helpful options include:
   infant birth-dates) to code for pregnancy phases
 - `export = TRUE`: to export a .csv of the participant’s data to your
   working directory (e.g., for use in other programs)
+- `epoch = 30` or `epoch = 60` (both require `rawdata = TRUE`): to
+  return a df binned into 30 or 60 second epochs
 - `anon = TRUE`: to return a data frame with anonymized participant ID’s
   (instead of subdirectory names); particularly useful if you are
   anticipating to export the data and share with others
@@ -104,7 +106,8 @@ parallel those of `scrapePerson()`, and users need not supply a target
 ID (as in `scrapePerson()`) as `scrapeSample()` will simply identify all
 unique subdirectories (i.e., for each participant) in your data
 subdirectory. Users should be aware that using `scrapeSample()` with
-`rawdata = TRUE` can be especially time-consuming.
+`rawdata = TRUE` (with or without `epoch = 30` or `epoch = 60`) can be
+especially time-consuming.
 
 ``` r
 samp.df <- scrapePerson(rawdata = TRUE)
