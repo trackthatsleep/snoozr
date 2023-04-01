@@ -82,8 +82,22 @@ scrapeSample <- function(sampbirthdf = NULL, anon = FALSE,
 
   #Export to .csv if desired
   if(export == TRUE){
+
+    #solution adapted from https://www.statology.org/r-split-data-frame/
+    #define number of data frames to split into
+    n <- round((nrow(dfSample)/500000)+1)
+
+    #split data frame into n equal-sized data frames
+    dfSampleSplit <- split(dfSample, factor(sort(rank(row.names(dfSample))%%n)))
+
     dir.create("./processed data")
-    readr::write_csv(dfSample, file = stringr::str_c("./processed data/", "sample",".csv"))
+
+    for(i in 0:(n-1)){
+      filenum <- as.character(i)
+      readr::write_csv(dfSampleSplit[[filenum]], file = stringr::str_c("./processed data/", "sample","_", i, ".csv"))
+
+    }
+
   }
 
   return(dfSample)

@@ -231,9 +231,23 @@ scrapePerson <- function(idTarget,
 
   #Export to .csv if desired
   if(export == TRUE){
+
+    #solution adapted from https://www.statology.org/r-split-data-frame/
+    #define number of data frames to split into
+    n <- round((nrow(dfPerson)/500000)+1)
+
+    #split data frame into n equal-sized data frames
+    dfPersonSplit <- split(dfPerson, factor(sort(rank(row.names(dfPerson))%%n)))
+
+    #Create directory and subdirectory
     dir.create("./processed data")
     dir.create("./processed data/individual files")
-    readr::write_csv(dfPerson, file = stringr::str_c("./processed data/individual files/", idTarget,".csv"))
+
+    for(i in 0:(n-1)){
+      filenum <- as.character(i)
+      readr::write_csv(dfPersonSplit[[filenum]], file = stringr::str_c("./processed data/individual files/", idTarget,"_", i, ".csv"))
+
+    }
   }
 
 
