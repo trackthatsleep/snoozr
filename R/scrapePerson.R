@@ -214,7 +214,18 @@ scrapePerson <- function(idTarget,
   if(isTRUE(rawdata)){
     dfPerson <- dfPerson %>%
       dplyr::filter(!is.na(.data$NumberofAwakenings)) %>%
-      dplyr::arrange(dplyr::desc(.data$dateTime))
+      #new code to handle parsing without errors requiring downstream epoch coercion
+      dplyr::mutate(eventDate = lubridate::as_date(substr(.data$dateTime, 1, 10)),
+                    eventTime = lubridate::hms(substr(.data$dateTime, 12, 23)),#confirmed this duplicates dateTime
+                    eventDateTime = .data$eventDate + .data$eventTime,
+                    startTime = lubridate::hms(.data$startTime),
+                    endTime = lubridate::hms(.data$endTime)) %>%
+      dplyr::arrange(dplyr::desc(.data$eventDate), dplyr::desc(.data$eventTime)) %>%
+      dplyr::select(-.data$dateTime) %>%
+      dplyr::relocate(.data$id, .data$type, .data$dateOfSleep, .data$startDate, .data$startTime, .data$endDate, .data$endTime,
+                      .data$MinutesAsleep, .data$MinutesAwake, .data$NumberofAwakenings, .data$TimeinBed,
+                      .data$logId, .data$mainsleep, .data$eventDate, .data$eventTime, .data$eventDateTime)
+
   }
 
   if(!is.null(epoch)){
