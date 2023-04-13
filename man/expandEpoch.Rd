@@ -9,7 +9,7 @@ expandEpoch(data, epoch)
 \arguments{
 \item{data}{data frame from within scrapePerson with raw = TRUE}
 
-\item{epoch}{whether 30 or 60 epoch is requested}
+\item{epoch}{currently only 30 is supported}
 }
 \value{
 data frame converted to 30 or 60 second epoch

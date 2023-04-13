@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="index.html">snoozr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9006</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9007</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -119,7 +119,7 @@
 <li>
 <code>export = TRUE</code>: to export a .csv of the participant’s data to your working directory (e.g., for use in other programs)</li>
 <li>
-<code>epoch = 30</code> or <code>epoch = 60</code> (both require <code>rawdata = TRUE</code>): to return a df binned into 30 or 60 second epochs</li>
+<code>epoch = 30</code> (which requires <code>rawdata = TRUE</code>): to return a df binned into 30 second epochs</li>
 <li>
 <code>anon = TRUE</code>: to return a data frame with anonymized participant ID’s (instead of subdirectory names); particularly useful if you are anticipating to export the data and share with others</li>
 </ul>
@@ -127,7 +127,7 @@
 <div class="section level2">
 <h2 id="scrapesample">scrapeSample()<a class="anchor" aria-label="anchor" href="#scrapesample"></a>
 </h2>
-<p><code><a href="reference/scrapeSample.html">scrapeSample()</a></code> is the function to use when you wish to convert the .json files of <em>all</em> users, into a flattened data frame for further description, visualization, and/or analysis. Its arguments mostly parallel those of <code><a href="reference/scrapePerson.html">scrapePerson()</a></code>, and users need not supply a target ID (as in <code><a href="reference/scrapePerson.html">scrapePerson()</a></code>) as <code><a href="reference/scrapeSample.html">scrapeSample()</a></code> will simply identify all unique subdirectories (i.e., for each participant) in your data subdirectory. Users should be aware that using <code><a href="reference/scrapeSample.html">scrapeSample()</a></code> with <code>rawdata = TRUE</code> (with or without <code>epoch = 30</code> or <code>epoch = 60</code>) can be especially time-consuming.</p>
+<p><code><a href="reference/scrapeSample.html">scrapeSample()</a></code> is the function to use when you wish to convert the .json files of <em>all</em> users, into a flattened data frame for further description, visualization, and/or analysis. Its arguments mostly parallel those of <code><a href="reference/scrapePerson.html">scrapePerson()</a></code>, and users need not supply a target ID (as in <code><a href="reference/scrapePerson.html">scrapePerson()</a></code>) as <code><a href="reference/scrapeSample.html">scrapeSample()</a></code> will simply identify all unique subdirectories (i.e., for each participant) in your data subdirectory. Users should be aware that using <code><a href="reference/scrapeSample.html">scrapeSample()</a></code> with <code>rawdata = TRUE</code> (with or without <code>epoch = 30</code>) can be especially time-consuming.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">samp.df</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/scrapePerson.html">scrapePerson</a></span><span class="op">(</span>rawdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
